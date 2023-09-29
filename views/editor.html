@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/vs2015.min.css" type="text/css"/>
+  <link rel="stylesheet" href="/css/editor.css" type="text/css"/>
+</head>
+<body>
+  <header>
+    <h2 class="logo">WebEditor</h2>
+    <img id="profile" src="/user.png" alt="profile image"/>
+    <div class="profile_dialog">
+      <img src="/user.png" alt="img placeholder"/>
+      <p id="name"></p>
+      <button id="logout_btn">Log Out</button>
+    </div>
+  </header>
+  <main>
+    <div class="sidebar_left">
+      <div class="project_input_field">
+        <input type="text" id="project"/>
+        <img src="/new_folder.png" id="cr_pr_btn"/>
+      </div>
+      <h4>Projects</h4>
+      <div id="projectsHierarchy"></div>
+      <h4>Active Project</h4>
+      <div id="fileHierarchy"></div>
+    </div>
+    
+    <div class="editor_container">
+      <div class="editor">
+        <div id="col_numbers"></div>
+        <pre><code contenteditable="true">const logout_btn = document.getElementById("logout_btn")
+const name = document.getElementById("name")
+const profile = document.getElementById("profile")
+const profile_dialog = document.querySelector(".profile_dialog")
+const project_input = document.querySelector("#project")
+const create_project_btn = document.querySelector("#cr_pr_btn")
+const projectHierarchy = document.querySelector("#projectsHierarchy")
+name.innerText = localStorage.getItem("username")
+logout_btn.addEventListener("click", async () => {
+  const res = await fetch("/logout", {method: "post"})
+  const data = await res.json()
+  window.location.href = "/login"
+})
+
+
+</code></pre>
+      </div>
+    </div>
+   
+    </div>
+  </main>
+  
+  <script src="/js/highlight.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/js/editor.js" type="text/javascript" charset="utf-8"></script>
+  </body>
+</html>

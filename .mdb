@@ -1,0 +1,10 @@
+{
+  "projectName": "codeditor",
+  "meta": {
+    "type": "backend"
+  },
+  "backend": {
+    "platform": "node17"
+  },
+  "hash": "9abbb93b"
+}

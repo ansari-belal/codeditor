@@ -1,0 +1,11 @@
+{
+  "projectName": "node-free-express-sequelize",
+  "meta": {
+    "type": "backend",
+    "starter": "node-free-express-sequelize"
+  },
+  "backend": {
+    "platform": "node17"
+  },
+  "hash": "07a83255"
+}
