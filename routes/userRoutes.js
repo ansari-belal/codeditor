@@ -1,85 +1,93 @@
 const express = require("express");
 const router = express.Router();
-const passport = require("passport");
+const path = require("path");
+const fs = require("fs").promises;
+const jwt = require("jsonwebtoken");
+const uuid = require("uuid");
 const bcrypt = require("bcryptjs");
-const connection = require("../config/database.js");
+const User = require("../models/User.js");
+const isAuth = require("../middlewares/auth.js");
 
-function isAuthenticated(req, res, next, err) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  return next(err)
-}
+router.post("/register", async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        res.json({ isReg: false, message: "fill the inputs" });
+        return;
+    }
+    try {
+        const saltRounds = 10;
+        const id = uuid.v1();
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-router.get('/register', (req, res) => {
-  res.sendFile("register.html", { root: "views"})
-});
-
-router.get('/login', (req, res) => {
-  res.sendFile("login.html", { root: "views"})
-});
-
-router.get('/protected', isAuthenticated, (req, res) => {
-  res.sendFile("editor.html", { root: "views"})
-});
-
-router.post('/register', (req, res) => {
-  const {
-    username, password
-  } = req.body;
-  connection.query(
-    'SELECT * FROM users WHERE username = ?',
-    [username],
-    (err, results) => {
-      if (err) {
-        console.error('Error querying the database: ' + err.stack);
-        return res.status(500).send('An error occurred.');
-      }
-
-      if (results.length) {
-        return res.status(409).send('Username already taken.');
-      }
-
-      const saltRounds = 10;
-      bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-        if (err) {
-          console.error('Error hashing the password: ' + err.stack);
-          return res.status(500).send('An error occurred.');
+        const user = await User.findOne({ where: { email } });
+        if(user) {
+           res.status(500).json({ isReg: false, message: "Registration failed" });
+           return
         }
-
-        connection.query(
-          'INSERT INTO users (username, password) VALUES (?, ?)',
-          [username, hashedPassword],
-          (err) => {
-            res.status(200).json({message: "registration successful please login"})
-            if (err) {
-              console.error('Error inserting the user: ' + err.stack);
-              return res.status(500).send('An error occurred.');
+        await User.create({
+            user_id: id,
+            email,
+            password: hashedPassword,
+            data: {
+                projects: []
             }
-          }
-        );
-      });
+        });
+        await fs.mkdir(`./users/${id}`);
+        res.json({ isReg: true, message: "User registered successfully" });
+    } catch (e) {
+        console.error("Error registering user:", e);
+        res.status(500).json({ isReg: false, message: "Registration failed" });
     }
-  );
 });
 
-// Login route
-router.post('/login',
-  passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/',
-  })
-);
-
-// Logout route
-router.post('/logout', function(req, res, next) {
-  req.logout(function(err) {
-    if (err) {
-      return next(err);
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        res.json({ isLoggedIn: false, message: "fill the inputs" });
+        return;
     }
-  });
-  res.send("successfully logout")
+    try {
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            res.status(401).json({
+                isLoggedIn: false,
+                message: "Authentication failed"
+            });
+        } else {
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (passwordMatch) {
+                const token = jwt.sign(
+                    { id: user.user_id },
+                    process.env.JWT_SECRET
+                );
+                res.cookie("token", token, { httpOnly: true, secure: true });
+                res.status(200).json({
+                    isLoggedIn: true,
+                    message: "Login successful",
+                    username: user.email.split("@")[0],
+                    userId: user.user_id
+                });
+            }
+        }
+    } catch (e) {
+        res.status(401).json({
+            isLoggedIn: false,
+            message: "Authentication failed"
+        });
+    }
 });
 
+router.get("/login", (req, res) => {
+    res.sendFile("login.html", { root: path.join(__dirname, "../public") });
+});
 
-module.exports = router
+router.get("/register", (req, res) => {
+    res.sendFile("register.html", { root: path.join(__dirname, "../public") });
+});
+
+router.post("/logout", isAuth, (req, res) => {
+    res.clearCookie("token");
+    res.json({ success: true, message: "Logout successful" });
+});
+
+module.exports = router;

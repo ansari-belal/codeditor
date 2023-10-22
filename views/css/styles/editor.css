@@ -4,11 +4,7 @@
 }
 @font-face {
   font-family: codeFont;
-  src: url('/fonts/static/FiraCode-Medium.ttf');
-}
-
-body {
-  overflow: hidden;
+  src: url('/fonts/PTMono-Regular.ttf');
 }
 
 * {
@@ -17,29 +13,28 @@ body {
   box-sizing: border-box;
 }
 
+body {
+  font-family: myFont;
+  height: 100vh;
+}
+
 header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   height: 50px;
   display: flex;
-  background: #011627;
+  background: #1D212C;
   justify-content: space-between;
   align-items: center;
   padding: 0 15px;
-  z-index: 200;
   box-shadow: 0 2px 10px #00000060;
 }
 
 main {
-  margin-top: 50px;
-  height:  calc(100vh - 50px);
+  max-height: 100vh;
   display: flex;
 }
 
 .logo {
-  color: #9b8cfb;
+  color: white;
   font-size: 20px;
   font-family: codeFont;
 }
@@ -49,9 +44,11 @@ header img{
   height: 30px;
 }
 
+#preview_btn,
+#save_btn,
 #logout_btn {
   width: 100%;
-  background: #9b8cfb;
+  background: #08121ee3;
   color: white;
   padding: 8px;
   border: none;
@@ -60,6 +57,7 @@ header img{
   font-weight: bold; 
   font-size: 13px;
   border-radius: 3px;
+  margin: 10px;
 }
 
 .profile_dialog {
@@ -67,7 +65,6 @@ header img{
   width: 150px;
   top: 60px;
   right: 10px;
-  box-shadow: 0 1px 5px lightgrey;
   padding: 10px;
   z-index: 100;
   background: white;
@@ -99,9 +96,7 @@ header img{
 .sidebar_left {
   width: 200px;
   padding: 10px 5px;
-  box-shadow: 0 5px 5px lightgrey;
-  background: white;
-  overflow: scroll;
+  background: #1D212C;
   font-family: myFont;
   user-select: none;
 }
@@ -134,35 +129,42 @@ header img{
   color: white;
 }
 
-#projectsHierarchy ul li,
-#fileHierarchy ul li {
-  list-style: none;
-  font-family: Sans-Serif;
-  color: black;
+.sidebar_left h4 {
+  margin-top: 5px;
+  padding: 2px 6px;
+  background: #151924;
+  color: white;
   font-size: 15px;
 }
 
-.sidebar_left h4 {
-  margin-top: 5px;
-  margin-left: 5px;
-}
-
 #projectsHierarchy {
-  min-height: 150px;
-  margin: 10px 0;
+  height: 20%;
+  overflow: scroll;
 }
 
-#fileHierarchy {
-  margin: 10px 0;
+#filesHierarchy{
+  height: 60%;
+  overflow: scroll;
 }
 
-.file,
+#projectsHierarchy ul,
+#filesHierarchy ul {
+   list-style: none;
+   color: white;
+}
+
+#filesHierarchy ul > li > ul {
+  margin-left: 15px;
+}
+
 .folder {
     cursor: pointer;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 5px;
 }
+
 
 .file_li {
   display: flex;
@@ -170,45 +172,68 @@ header img{
   align-items: center;
 }
 
-.file_li > img {
+.file_li img {
   margin-right: 5px;
   width: 15px;
   height: 15px;
 }
 
-.folder > img,
-.file > img {
+.folder img{
   width: 15px;
   height: 15px;
 }
 
-.folder span,
-.file span {
-  margin-left: 10px;
+.folder span{
+  margin-left: 5px;
+  font-size: 14px;
 }
 
 .editor_container {
-  height: calc(100vh - 50px);
+  width: 100vw;
+  max-height: 100%;
+  overflow: scroll;
+  scroll-behavior: smooth;
 }
 
 .editor {
-  display: flex;
-  min-height: calc(100vh - 50px);
+  display: none;
+  min-height: 100%;
 }
 
 .editor pre {
-  width: 100vw;
+  flex: 1;
   overflow-x: scroll;
-  background: #011627;
-  padding: 10px 10px;
+  scroll-behavior: smooth;
+  background: #151924;
+  padding: 5px 10px;
+  padding-right: 40px;
+  font-size: 80%;
 }
+
+.hljs-tag {
+  color: #e8992c;
+}
+
+.hljs-attr {
+  color: #eecb2c !important;
+}
+
 
 .editor pre code { 
   font-family: codeFont;
-  line-height: 25px;
-  color: ghostwhite;
+  line-height: 27px;
+  color: white;
   font-size: 13px;
-  width: 100%;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: none;
+  outline: none;
+}
+
+.editor pre code span {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .editor pre code:focus {
@@ -218,17 +243,85 @@ header img{
 
 .editor #col_numbers {
   min-width: 40px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 10px;
-  background: #011627;
-  z-index: 100;
-  box-shadow: 2px 0 10px #00000053;
+  padding: 5px 10px;
+  background: #151924;
+  z-index: 50;
+  overflow-y: scroll;
 }
 
 .editor  #col_numbers .num {
-  color: #d3d3d358;
-  font-size: 13px;
-  line-height: 25px;
+  color: lightgrey;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 27px;
+}
+
+.collapse {
+  display: none;
+}
+
+.bars {
+  display: none;
+  color: white;
+}
+
+@media only screen and (max-width: 400px) {
+  .bars {
+    display: block;
+  }
+  .sidebar_left {
+    position: fixed;
+    top: 0;
+    left: -200px;
+    bottom: 0;
+    z-index: 200;
+    box-shadow: 0 2px 10px #10161db2;
+    transition: left 0.1s;
+  }
+  .show_sidebar {
+    left: 0;
+  }
+  .hide_sidebar {
+    left: -200px;
+  }
+}
+
+.container {
+  height: calc(100vh - 50px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-family: myFont;
+}
+
+.container h2 {
+  text-align: center;
+}
+
+.container button {
+  border: none;
+  outline: none;
+  padding: 10px 15px;
+  background: #093b5dfc;
+  color: white;
+  font-size: 20px;
+  border-radius: 5px;
+  margin-top: 30px;
+}
+
+.dialog_box {
+  height: 30px;
+  background: white;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 10px;
+  align-items: center;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #12001cde;
+  z-index: 100;
 }
