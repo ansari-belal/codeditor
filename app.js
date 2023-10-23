@@ -54,7 +54,7 @@ const server = https.createServer(httpsOptions, app);
 db.sync()
   .then(() => {
     console.log('Database synced');
-    server.listen(port, () => {
+    server.listen("https://codeditor-ck1x.vercel.app", port, () => {
       console.log(`Server running on port ${port}`);
     });
   })
