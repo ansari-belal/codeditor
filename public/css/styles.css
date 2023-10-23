@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f2f2f2;
+  min-height: calc(100vh - 20vh);
+  margin: 0;
+  padding: 0 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.container h1 {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.container form input[type="text"],
+.container form input[type="password"] {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f2f2f2;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.container form input[type="text"]:focus,
+.container form input[type="password"]:focus {
+  background-color: #e6e6e6;
+}
+
+.container form button {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.container form button:hover {
+  background-color: #45a049;
+}
+
+.container p {
+  text-align: center;
+  margin-top: 20px;
+  color: #777;
+  font-size: 14px;
+}
+
+.container p a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+@ media screen and (max-width: 480px) {
+.container {
+  padding: 20px;
+}
+
+.container h1 {
+  font-size: 20px;
+  margin-bottom: 30px;
+}
+
+.container form button {
+  padding: 14px;
+  font-size: 14px;
+}
+
+} 
+
+.signup_with_google {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-top: 20px;
+  border: 1.5px solid darkgrey;
+}
+
+.signup_with_google img {
+  width: 30px;
+  height: 30px;
+  margin-left: 5px;
+}
+
+.signup_with_google p {
+  font-size: 17px;
+  margin-top: 0;
+  margin-right: 30px;
+  color: black;
+}

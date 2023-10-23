@@ -1,0 +1,41 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "belal",
+  "license": "MIT",
+  "dependencies": {
+    "@ngrok/ngrok": "^0.6.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dompurify": "^3.0.3",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^7.0.0",
+    "highlight.js": "^11.8.0",
+    "jsdom": "^22.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.3.2",
+    "nodemailer": "^6.9.5",
+    "npm": "^10.1.0",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "prettier": "^3.0.3",
+    "secure-filters": "^1.1.0",
+    "sequelize": "^6.32.1",
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^4.7.2",
+    "uuid": "^9.0.0",
+    "winston": "^3.9.0"
+  }
+}
