@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
+const winston = require('winston');
 const dotenv = require("dotenv");
 const crypto = require("crypto");
 const userRoutes = require("./routes/userRoutes.js");
@@ -15,6 +16,21 @@ const isAuth = require("./middlewares/auth.js");
 const db = require("./config/database.js");
 dotenv.config();
 
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: { service: 'user-service' },
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple(),
+  }));
+}
 //Middlewares
 app.use(express.static("public"));
 app.use(express.json());
@@ -54,7 +70,7 @@ const server = https.createServer(httpsOptions, app);
 db.sync()
   .then(() => {
     console.log('Database synced');
-    server.listen("https://codeditor-ck1x.vercel.app", port, () => {
+    server.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
   })

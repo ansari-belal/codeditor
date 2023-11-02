@@ -2,20 +2,23 @@
 <html>
     <head>
         <title>Editor</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet" href="/css/agate.min.css" type="text/css" />
+        <link rel="stylesheet" href="/fa-icons/css/all.css" type="text/css" />
         <link rel="stylesheet" href="/css/editor.css" type="text/css" />
     </head>
     <body>
         <header>
-            <span class="bars">|||</span>
-            <h2 class="logo">WebEditor</h2>
+            <img class="bars" src="/fa-icons/svgs/solid/bars.svg"/>
+            <h2 class="logo fa-bars">WebEditor</h2>
             <img id="profile" src="/user.png" alt="profile image" />
             <div class="profile_dialog">
                 <img src="/user.png" alt="img placeholder" />
                 <p id="name"></p>
+                <button id="run_btn" hidden>Run</button>
                 <button id="save_btn" hidden>Save</button>
                 <button id="preview_btn" hidden>Preview</button>
+                <button id="format_btn" hidden>Format</button>
                 <button id="logout_btn">Log Out</button>
             </div>
         </header>
@@ -40,6 +43,7 @@
                     <div id="col_numbers"></div>
                     <pre><code contenteditable="true"></code></pre>
                 </div>
+                <div id="consoleTab"></div>
             </div>
         </main>
 

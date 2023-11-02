@@ -1,6 +1,8 @@
 const logout_btn = document.getElementById("logout_btn");
 const preview_btn = document.getElementById("preview_btn");
 const save_btn = document.getElementById("save_btn");
+const format_btn = document.getElementById("format_btn");
+const run_btn = document.getElementById("run_btn");
 const name = document.getElementById("name");
 const profile = document.getElementById("profile");
 const profile_dialog = document.querySelector(".profile_dialog");
@@ -54,46 +56,53 @@ const state = createState({ isLoading: false });
 state.registerModule("sidebar", "projects", { projects: [] });
 state.registerModule("sidebar", "activeProject", { activeProject: [] });
 state.registerModule("sidebar", "dialog", { isShow: false });
+state.registerModule("console", "dialog", { isShow: false });
 const proMod = state.getModule("sidebar", "projects");
 const fileMod = state.getModule("sidebar", "activeProject");
 const dialogMod = state.getModule("sidebar", "dialog");
+const consoleMod = state.getModule("console", "dialog");
 
 proMod.subscribe((newState, oldState) => {
     const { projects } = newState;
     if (projects.length > 0) {
+        preview_btn.hidden = false;
         con1.style.display = "flex";
         con2.style.display = "none";
     } else {
+        preview_btn.hidden = true;
         con1.style.display = "none";
         con2.style.display = "flex";
     }
 
-    const projectList = document.createElement("ul");
-    projects.forEach((item, index) => {
+    const proList = document.createElement("ul");
+    projects.forEach(item => {
         const li = document.createElement("li");
         const div = document.createElement("div");
         const span = document.createElement("span");
         span.textContent = item.name;
         const img = new Image();
         const img2 = new Image();
+        const img3 = new Image();
         img.src = "/folder2.png";
         img2.src = "/dots.png";
+        img3.src = "/dots.png";
         div.appendChild(img);
         div.appendChild(span);
         div.classList.add("folder");
         li.classList.add("file_li");
         div.addEventListener("click", () => {
             activePro = item.name;
-            preview_btn.hidden = false;
             state.emit("activeProject", [item]);
         });
+        img3.addEventListener("click", () => download(item.name));
         li.appendChild(div);
         img2.addEventListener("click", () => deleteFolder(item.path));
+        li.appendChild(img3);
         li.appendChild(img2);
-        projectList.appendChild(li);
+        proList.appendChild(li);
     });
     projectHierarchy.innerHTML = "";
-    projectHierarchy.appendChild(projectList);
+    projectHierarchy.appendChild(proList);
 });
 
 function buildFileTree(pro, pareElm) {
@@ -144,10 +153,17 @@ function buildFileTree(pro, pareElm) {
             div.classList.add("folder");
             div.addEventListener("click", async () => {
                 language = ext;
+                dialogMod.setState({ isShow: false });
                 await loadFile(item.path);
                 activeFile = item.path;
                 save_btn.hidden = false;
-                logo.textContent = item.name
+                format_btn.hidden = false;
+                if (language === "js" || language === "mjs") {
+                    run_btn.hidden = false;
+                } else {
+                    run_btn.hidden = true;
+                }
+                logo.textContent = item.name;
                 syncColumnNumbers();
             });
             div2.appendChild(div);
@@ -170,60 +186,144 @@ fileMod.subscribe((newState, oldState) => {
     fileHierarchy.appendChild(filesList);
 });
 
-const div = document.createElement("div");
-dialogMod.subscribe((newValue, oldValue) => {
-    const { element, item, isShow } = newValue;
-    if (isShow) {
-        const box = document.createElement("div");
-        box.style.position = "absolute";
-        box.style.top = `${element.offsetTop - 8}px`;
-        box.style.left = `${element.offsetLeft + 30}px`;
-        const img = document.createElement("img");
-        const img1 = document.createElement("img");
-        const img2 = document.createElement("img");
-        const img3 = document.createElement("img");
-        img.src = "/delete.png";
-        img1.src = "/delete.png";
-        img2.src = "/delete.png";
-        img3.src = "/delete.png";
-        function deleteFileOrFolder(item) {
-            if (item.type === "folder") {
-                return deleteFolder(item.path);
-            } else {
-                return deleteFile(item.path);
-            }
-        }
-        img.addEventListener("click", () => deleteFileOrFolder(item));
-        box.appendChild(img);
-        if (item.type === "folder") {
-            img1.addEventListener("click", () => createFolder(item.path));
-            box.appendChild(img1);
-            img2.addEventListener("click", () => createFile(item.path));
-            box.appendChild(img2);
-        }
-        box.appendChild(img3);
-        div.innerHTML = "";
-        box.classList.add("dialog_box");
-        div.appendChild(box);
-        div.id = "dialog";
-        sidebar.appendChild(div);
+function deleteFileOrFolder(item) {
+    if (item.type === "folder") {
+        return deleteFolder(item.path);
     } else {
-        const s = sidebar.querySelector("#dialog");
-        s.remove();
-        dialogMod.setState({ isShow: false });
+        return deleteFile(item.path);
+    }
+}
+
+function createIcon(src, clickHandler, args) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.addEventListener("click", () => clickHandler(args));
+    return img;
+}
+
+function createIcons(item) {
+    div.innerHTML = ""; // Clear previous content
+    box.appendChild(
+        createIcon(
+            "/fa-icons/svgs/solid/trash-can.svg",
+            deleteFileOrFolder,
+            item
+        )
+    );
+
+    if (item.type === "folder") {
+        box.appendChild(
+            createIcon(
+                "/fa-icons/svgs/solid/folder-plus.svg",
+                createFolder,
+                item.path
+            )
+        );
+        box.appendChild(
+            createIcon(
+                "/fa-icons/svgs/solid/file-circle-plus.svg",
+                createFile,
+                item.path
+            )
+        );
+    }
+
+    box.appendChild(
+        createIcon("/fa-icons/svgs/solid/pencil.svg", editItem, item)
+    );
+    box.appendChild(
+        createIcon("/fa-icons/svgs/solid/circle-info.svg", showItemInfo, item)
+    );
+    div.appendChild(box);
+}
+const div = document.createElement("div")
+dialogMod.subscribe((newValue, oldValue) => {
+    try {
+        if (newValue.isShow) {
+            const { element, item } = newValue;
+            const box = document.createElement("div");
+            box.style.position = "absolute";
+            box.style.top = `${element.offsetTop - 8}px`;
+            box.style.left = `${element.offsetLeft + 30}px`;
+            const img = document.createElement("img");
+            const img1 = document.createElement("img");
+            const img2 = document.createElement("img");
+            const img3 = document.createElement("img");
+            img.src = "/delete.png";
+            img1.src = "/delete.png";
+            img2.src = "/delete.png";
+            img3.src = "/delete.png";
+
+            img.addEventListener("click", () => deleteFileOrFolder(item));
+            box.appendChild(img);
+            if (item.type === "folder") {
+                img1.addEventListener("click", () => createFolder(item.path));
+                box.appendChild(img1);
+                img2.addEventListener("click", () => createFile(item.path));
+                box.appendChild(img2);
+            }
+            box.appendChild(img3);
+            div.innerHTML = "";
+            box.classList.add("dialog_box");
+            div.appendChild(box);
+            div.id = "dialog";
+            sidebar.appendChild(div);
+        } else {
+            const s = sidebar.querySelector("#dialog");
+            s.remove();
+            dialogMod.setState({ isShow: false });
+        }
+    } catch (e) {
+        console.log(e.message);
     }
 });
 
-proMod.addMiddleware((newState, oldState) => {
-    return newState;
-});
+const consoleTab = document.getElementById("consoleTab");
 
-fileMod.addMiddleware((newState, oldState) => {
-    return newState;
-});
+let logMessages = [];
 
-dialogMod.addMiddleware((newState, oldState) => {
-    return newState;
+function writeToConsole(message) {
+    const logElement = document.createElement("p");
+    logElement.style.padding = "5px";
+    logElement.style.background = "#e58b6e";
+    logElement.style.fontWeight = "bold";
+    logElement.style.fontSize = "13px";
+    logElement.innerText = message;
+    consoleTab.appendChild(logElement);
+    consoleTab.scrollTop = consoleTab.scrollHeight; // Automatically scroll to the latest log
+    logMessages.push(message);
+}
+
+// Override console.log to capture log messages
+const originalConsoleLog = console.log;
+console.log = function () {
+    const message = Array.from(arguments)
+        .map(arg => JSON.stringify(arg))
+        .join(" ");
+    writeToConsole(message);
+    originalConsoleLog.apply(console, arguments); // Call the original console.log
+};
+
+// Use the custom console
+//console.log();
+
+// Handle error logging
+window.onerror = function (message, source, lineno, colno, error) {
+    console.log(`Error: ${message}`);
+};
+
+consoleMod.subscribe((newValue, oldValue) => {
+    const { results, isShow } = newValue;
+    if (isShow) {
+        consoleTab.style.bottom = `0`;
+        let error = "";
+        results[0].messages.forEach(message => {
+            error += message.message;
+        });
+        consoleTab.innerHTML = error;
+    } else {
+        consoleTab.style.bottom = `-310px`;
+    }
 });
 
 state.on("projects", payload => {
@@ -245,10 +345,57 @@ state.on("showDialog", payload => {
     });
 });
 
+state.on("showConsoleTab", payload => {
+    consoleMod.setState({
+        ...payload,
+        isShow: true
+    });
+});
+
 profile.addEventListener("click", () => {
     profile_dialog.classList.toggle("show_profile");
 });
 
+async function download(name) {
+    //const progressBar = document.getElementById("progressBar");
+    //progressBar.style.display = "block";
+
+    try {
+        const response = await fetch(`/download/${name}`);
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+
+        const reader = response.body.getReader();
+        const stream = new ReadableStream({
+            async start(controller) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        controller.close();
+                        break;
+                    }
+                    controller.enqueue(value);
+
+                    // Calculate and update progress based on the amount read
+                    //progressBar.value += value.length;
+                }
+            }
+        });
+
+        const blob = await new Response(stream).blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${name}.zip`;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
 async function createFolder(path) {
     const result = await req("/create_folder", "POST", {
         filepath: path,
@@ -264,14 +411,14 @@ async function createFile(path) {
     await getProjects();
 }
 
-async function getProjects() {
+async function getProjects(starting = "") {
     try {
-        state.setState({ isLoading: true });
         const res = await fetch(`/projects`);
         const data = await res.json();
-        state.setState({ isLoading: false });
         state.emit("projects", data.projects);
-        if (data.projects.length < 2) {
+
+        if (data.projects.length === 1) {
+            activePro = data.projects[0].name;
             state.emit("activeProject", [data.projects[0]]);
         }
     } catch (e) {
@@ -284,18 +431,24 @@ create_project_btn.addEventListener("click", async () => {
     try {
         p.textContent = "Loading...";
         projectHierarchy.appendChild(p);
-        const res = await fetch(`/create_project/${project_input.value}`);
-        if (res.status === 201) {
-            project_input.value = "";
+        const data = await req(`/create_project`, "POST", {
+            project_name: project_input.value
+        });
+        if (data.success) {
             await getProjects();
+            activePro = project_input.value;
+            project_input.value = "";
             p.remove();
+        } else {
+            p.style.display = "none";
+            alert(data.message);
         }
     } catch (e) {
-        alert(e.message);
+        alert(e);
     }
 });
 
-window.addEventListener("load", async () => await getProjects());
+window.addEventListener("load", async () => await getProjects("starting"));
 
 async function loadFile(path) {
     await sidebar.classList.remove("show_sidebar");
@@ -304,11 +457,15 @@ async function loadFile(path) {
     const data = await req(`/loadFile`, "POST", {
         filepath: path
     });
-    const result = hljs.highlight(language, data.file);
-    editor.innerHTML = result.value;
-    code = result.code;
-    currentCode = code;
-    return result;
+    if (data.success) {
+        const result = await hljs.highlight(language, data.file);
+        editor.innerHTML = await result.value;
+        code = result.code;
+        currentCode = code;
+    } else {
+        alert("file loading failed");
+    }
+    syncColumnNumbers();
 }
 
 async function deleteFile(path) {
@@ -318,6 +475,7 @@ async function deleteFile(path) {
         });
         if (data.success) {
             await getProjects();
+            dialogMod.setState({ isShow: false });
         }
     } catch (e) {
         alert(e);
@@ -329,7 +487,11 @@ async function deleteFolder(path) {
             filepath: path
         });
         if (data.success) {
+            if (activePro === path) {
+                state.emit("activeProject", []);
+            }
             await getProjects();
+            dialogMod.setState({ isShow: false });
         }
     } catch (e) {
         alert(e);
@@ -346,23 +508,56 @@ editor.addEventListener("input", e => {
     setCaretPosition(position);
 });
 
-editor.addEventListener("keydown", e => {});
-
 save_btn.addEventListener("click", async () => {
     const data = await req("/update_file", "POST", {
         filepath: activeFile,
         content: currentCode
     });
-    await loadFile(activeFile);
+    if (data.success) {
+        await loadFile(activeFile);
+    } else {
+        alert("file saving failed");
+    }
     code = currentCode;
+});
+format_btn.addEventListener("click", async () => {
+    const data = await req("/format", "POST", {
+        filepath: activeFile,
+        content: currentCode
+    });
+    if (data.success) {
+        await loadFile(activeFile);
+    } else {
+        alert("file formatting failed");
+    }
+});
+
+run_btn.addEventListener("click", async () => {
+    const data = await req("/run", "POST", {
+        filepath: activeFile,
+        content: currentCode
+    });
+    if (data.isError) {
+        state.emit("showConsoleTab", { results: data.results });
+    }
+});
+
+consoleTab.addEventListener("click", e => {
+    e.stopPropagation();
 });
 
 container.addEventListener("click", () => {
+    if (consoleMod.getState().isShow) {
+        consoleMod.setState({ isShow: false });
+        editor.blur();
+    }
     editor.focus();
+    profile_dialog.classList.remove("show_profile");
     sidebar.classList.remove("show_sidebar");
     sidebar.classList.add("hide_sidebar");
-    profile_dialog.classList.remove("show_profile");
-    dialogMod.setState({ isShow: false });
+    if (dialogMod.getState().isShow) {
+        dialogMod.setState({ isShow: false });
+    }
 });
 
 bars.addEventListener("click", () => {
@@ -390,7 +585,7 @@ window.addEventListener("beforeunload", e => {
     }
 });
 
-function syncColumnNumbers() {
+function syncColumnNumbers(messages = null) {
     let lines = editor.textContent.split("\n");
     lines = lines.slice(0, lines.length > 1 ? lines.length - 1 : lines.length);
     columnNumbers.innerHTML = "";

@@ -1,91 +1,100 @@
 @font-face {
-  font-family: myFont;
-  src: url('/fonts/Poppins-Regular.ttf');
+    font-family: myFont;
+    src: url("/fonts/Poppins-Regular.ttf");
 }
 @font-face {
-  font-family: codeFont;
-  src: url('/fonts/PTMono-Regular.ttf');
+    font-family: codeFont;
+    src: url("/fonts/PTMono-Regular.ttf");
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: myFont;
-  height: 100vh;
+    font-family: codeFont;
+    height: 100vh;
 }
 
 header {
-  height: 50px;
-  display: flex;
-  background: #1D212C;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 15px;
-  box-shadow: 0 2px 10px #00000060;
+    height: 50px;
+    display: flex;
+    background: #1a1d26;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    box-shadow: 0 2px 10px #00000060;
 }
 
 main {
-  max-height: 100vh;
-  display: flex;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+}
+
+.editor_container {
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .logo {
-  color: white;
-  font-size: 20px;
-  font-family: codeFont;
+    color: white;
+    font-size: 20px;
+    font-family: codeFont;
 }
 
-header img{
-  width: 30px;
-  height: 30px;
+header img {
+    width: 30px;
+    height: 30px;
 }
 
 #preview_btn,
 #save_btn,
+#format_btn,
+#run_btn,
 #logout_btn {
-  width: 100%;
-  background: #08121ee3;
-  color: white;
-  padding: 8px;
-  border: none;
-  outline: none;
-  box-shadow: 0 1px 5px lightgrey;
-  font-weight: bold; 
-  font-size: 13px;
-  border-radius: 3px;
-  margin: 10px;
+    width: 100%;
+    background: #08121ee3;
+    color: white;
+    padding: 8px;
+    border: none;
+    outline: none;
+    box-shadow: 0 1px 5px lightgrey;
+    font-weight: bold;
+    font-size: 13px;
+    border-radius: 3px;
+    margin: 10px;
 }
 
 .profile_dialog {
-  position: absolute;
-  width: 150px;
-  top: 60px;
-  right: 10px;
-  padding: 10px;
-  z-index: 100;
-  background: white;
-  display: none;
+    position: absolute;
+    width: 150px;
+    top: 60px;
+    right: 10px;
+    padding: 10px;
+    z-index: 100;
+    background: white;
+    display: none;
 }
 
 .profile_dialog img {
-  width: 60px; 
-  height: 60px;
-  border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
 }
 
 .profile_dialog #name {
-  margin: 10px auto;
-  font-weight: bold;
+    margin: 10px auto;
+    font-weight: bold;
 }
 
 .show_profile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .files {
@@ -94,67 +103,67 @@ header img{
 }
 
 .sidebar_left {
-  width: 200px;
-  padding: 10px 5px;
-  background: #1D212C;
-  font-family: myFont;
-  user-select: none;
+    width: 200px;
+    padding: 10px 5px;
+    background: #1d212c;
+    font-family: myFont;
+    user-select: none;
 }
 
 .sidebar_left .project_input_field {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
 .sidebar_left .project_input_field input {
-  width: 70%;
-  height: 20px;
-  padding: 10px 5px;
+    width: 70%;
+    height: 20px;
+    padding: 10px 5px;
 }
 
 .sidebar_left .project_input_field img {
-  width: 20%;
-  height: 35px;
-  margin-left: 10px;
-  padding: 2px 5px;
-  color: #9b8cfb;
-  font-weight: bold;
-  font-size: 15px;
-  outline: none;
+    width: 20%;
+    height: 35px;
+    margin-left: 10px;
+    padding: 2px 5px;
+    color: #9b8cfb;
+    font-weight: bold;
+    font-size: 15px;
+    outline: none;
 }
 
 .sidebar_left .project_input_field button:hover {
-  background: #9b8cfb;
-  color: white;
+    background: #9b8cfb;
+    color: white;
 }
 
 .sidebar_left h4 {
-  margin-top: 5px;
-  padding: 2px 6px;
-  background: #151924;
-  color: white;
-  font-size: 15px;
+    margin-top: 5px;
+    padding: 2px 6px;
+    background: #151924;
+    color: white;
+    font-size: 15px;
 }
 
 #projectsHierarchy {
-  height: 20%;
-  overflow: scroll;
+    height: 20%;
+    overflow: scroll;
 }
 
-#filesHierarchy{
-  height: 60%;
-  overflow: scroll;
+#filesHierarchy {
+    height: 60%;
+    overflow: scroll;
 }
 
 #projectsHierarchy ul,
 #filesHierarchy ul {
-   list-style: none;
-   color: white;
+    list-style: none;
+    color: white;
 }
 
 #filesHierarchy ul > li > ul {
-  margin-left: 15px;
+    margin-left: 15px;
 }
 
 .folder {
@@ -165,163 +174,178 @@ header img{
     padding: 5px;
 }
 
-
 .file_li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .file_li img {
-  margin-right: 5px;
-  width: 15px;
-  height: 15px;
+    margin-right: 5px;
+    width: 15px;
+    height: 15px;
 }
 
-.folder img{
-  width: 15px;
-  height: 15px;
+.folder img {
+    width: 15px;
+    height: 15px;
 }
 
-.folder span{
-  margin-left: 5px;
-  font-size: 14px;
+.folder span {
+    margin-left: 5px;
+    font-size: 14px;
 }
 
 .editor_container {
-  width: 100vw;
-  max-height: 100%;
-  overflow: scroll;
-  scroll-behavior: smooth;
+    width: 100vw;
+    max-height: 100%;
+    overflow: scroll;
+    scroll-behavior: smooth;
 }
 
 .editor {
-  display: none;
-  min-height: 100%;
+    display: none;
+    min-height: 100%;
 }
 
 .editor pre {
-  flex: 1;
-  overflow-x: scroll;
-  scroll-behavior: smooth;
-  background: #151924;
-  padding: 5px 10px;
-  padding-right: 40px;
-  font-size: 80%;
+    flex: 1;
+    overflow-x: scroll;
+    scroll-behavior: smooth;
+    background: #151924;
+    padding: 5px 10px;
+    padding-right: 40px;
+    font-size: 80%;
 }
 
 .hljs-tag {
-  color: #e8992c;
+    color: #e8992c;
 }
 
 .hljs-attr {
-  color: #eecb2c !important;
+    color: #eecb2c !important;
 }
 
-
-.editor pre code { 
-  font-family: codeFont;
-  line-height: 27px;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  border: none;
-  outline: none;
+.editor pre code {
+    font-family: codeFont;
+    line-height: 27px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border: none;
+    outline: none;
 }
 
 .editor pre code span {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
 
 .editor pre code:focus {
-  outline: none;
-  border: none;
+    outline: none;
+    border: none;
 }
 
 .editor #col_numbers {
-  min-width: 40px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 5px 10px;
-  background: #151924;
-  z-index: 50;
-  overflow-y: scroll;
+    min-width: 40px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px;
+    background: #151924;
+    z-index: 50;
+    overflow-y: scroll;
 }
 
-.editor  #col_numbers .num {
-  color: lightgrey;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 27px;
+.editor #col_numbers .num {
+    color: lightgrey;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 27px;
 }
 
 .collapse {
-  display: none;
+    display: none;
 }
 
 .bars {
-  display: none;
-  color: white;
+    display: none;
+    color: white;
 }
 
 @media only screen and (max-width: 400px) {
-  .bars {
-    display: block;
-  }
-  .sidebar_left {
-    position: fixed;
-    top: 0;
-    left: -200px;
-    bottom: 0;
-    z-index: 200;
-    box-shadow: 0 2px 10px #10161db2;
-    transition: left 0.1s;
-  }
-  .show_sidebar {
-    left: 0;
-  }
-  .hide_sidebar {
-    left: -200px;
-  }
+    .bars {
+        display: block;
+    }
+    .sidebar_left {
+        position: fixed;
+        top: 0;
+        left: -200px;
+        bottom: 0;
+        z-index: 150;
+        box-shadow: 0 2px 10px #10161db2;
+        transition: left 0.1s;
+    }
+    .show_sidebar {
+        left: 0;
+    }
+    .hide_sidebar {
+        left: -200px;
+    }
 }
 
 .container {
-  height: calc(100vh - 50px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  font-family: myFont;
+    height: calc(100vh - 50px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: myFont;
 }
 
 .container h2 {
-  text-align: center;
+    text-align: center;
 }
 
 .container button {
-  border: none;
-  outline: none;
-  padding: 10px 15px;
-  background: #093b5dfc;
-  color: white;
-  font-size: 20px;
-  border-radius: 5px;
-  margin-top: 30px;
+    border: none;
+    outline: none;
+    padding: 10px 15px;
+    background: #093b5dfc;
+    color: white;
+    font-size: 20px;
+    border-radius: 5px;
+    margin-top: 30px;
 }
 
 .dialog_box {
-  height: 30px;
-  background: white;
-  display: flex;
-  justify-content: space-evenly;
-  gap: 10px;
-  align-items: center;
-  border-radius: 5px;
-  box-shadow: 0 0 10px #12001cde;
-  z-index: 100;
+    height: 25px;
+    background: white;
+    display: flex;
+    justify-content: space-evenly;
+    gap: 12px;
+    align-items: center;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #12001cde;
+    z-index: 100;
+    padding: 5px 5px;
+}
+
+.dialog_box img {
+    width: 17px;
+    height: 17px;
+}
+
+#consoleTab {
+    position: absolute;
+    left: 0;
+    bottom: -310px;
+    width: 100%;
+    height: 300px;
+    background: white;
+    z-index: 100;
+    transition: bottom 0.2s ease-in-out;
 }
