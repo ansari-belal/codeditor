@@ -28,6 +28,9 @@ router.post("/register", async (req, res) => {
             user_id: id,
             email,
             password: hashedPassword,
+            data: {
+                projects: []
+            }
         });
         await fs.mkdir(`./users/${id}`);
         res.json({ isReg: true, message: "User registered successfully" });
@@ -57,18 +60,13 @@ router.post("/login", async (req, res) => {
                     { id: user.user_id },
                     process.env.JWT_SECRET
                 );
-                res.cookie("token", token, { httpOnly: true, secure: true, expiresIn: "1d" });
+                res.cookie("token", token, { httpOnly: true, secure: true });
                 res.status(200).json({
                     isLoggedIn: true,
                     message: "Login successful",
                     username: user.email.split("@")[0],
                     userId: user.user_id
                 });
-            }else {
-              res.status(401).json({
-                isLoggedIn: false,
-                message: "Authentication failed"
-            });
             }
         }
     } catch (e) {

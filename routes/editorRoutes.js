@@ -1,1 +1,214 @@
-{"files":[],"folders":[],"storageList":[],"fileBrowserState":[{"url":"/","name":"/"}],"settings":{"animation":"system","appTheme":"ayu mirage","autosave":1000,"fileBrowser":{"showHiddenFiles":false,"sortByName":true},"formatter":{"html":"acode.plugin.prettier","javascript":"acode.plugin.prettier","css":"acode.plugin.prettier","svg":"default"},"maxFileSize":12,"serverPort":8158,"previewPort":8158,"showConsoleToggler":true,"previewMode":"inapp","disableCache":false,"host":"localhost","search":{"caseSensitive":false,"regExp":false,"wholeWord":false},"lang":"en-US","fontSize":"13px","editorTheme":"night-owl","textWrap":false,"softTab":true,"tabSize":2,"retryRemoteFsAfterFail":true,"linenumbers":true,"formatOnSave":false,"autoCorrect":true,"openFileListPos":"sidebar","quickTools":2,"quickToolsTriggerMode":"touch","editorFont":"PT Mono Bold","vibrateOnTap":true,"fullscreen":false,"floatingButton":true,"liveAutoCompletion":true,"showPrintMargin":false,"printMargin":80,"scrollbarSize":5,"showSpaces":false,"confirmOnExit":true,"lineHeight":2,"leftMargin":50,"checkFiles":true,"desktopMode":false,"console":"legacy","keyboardMode":"NO_SUGGESTIONS_AGGRESSIVE","rememberFiles":true,"rememberFolders":true,"diagonalScrolling":true,"reverseScrolling":false,"teardropTimeout":3000,"teardropSize":20,"scrollSpeed":0.08,"customTheme":{"name":"Custom","type":"dark","version":"free","popupBorderRadius":"4px","activeColor":"rgb(51, 153, 255)","activeTextColor":"rgb(255, 215, 0)","activeIconColor":"rgba(0, 0, 0, 0.2)","borderColor":"rgba(122, 122, 122, 0.2)","boxShadowColor":"rgba(0, 0, 0, 0.2)","buttonActiveColor":"rgb(44, 142, 240)","buttonBackgroundColor":"rgb(51, 153, 255)","buttonTextColor":"rgb(255, 255, 255)","errorTextColor":"rgb(255, 185, 92)","primaryColor":"rgb(153, 153, 255)","primaryTextColor":"rgb(255, 255, 255)","secondaryColor":"rgb(255, 255, 255)","secondaryTextColor":"rgb(37, 37, 37)","linkTextColor":"rgb(97, 94, 253)","scrollbarColor":"rgba(0, 0, 0, 0.3)","popupBorderColor":"rgba(0, 0, 0, 0)","popupIconColor":"rgb(153, 153, 255)","popupBackgroundColor":"rgb(255, 255, 255)","popupTextColor":"rgb(37, 37, 37)","popupActiveColor":"rgb(169, 0, 0)","dangerColor":"rgb(160, 51, 0)","dangerTextColor":"rgb(255, 255, 255)","fileTabWidth":"120px"},"relativeLineNumbers":false,"elasticTabstops":false,"rtlText":false,"hardWrap":false,"useTextareaForIME":false,"touchMoveThreshold":0.25,"quicktoolsItems":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],"excludeFolders":["**/node_modules/**","**/.git/**","**/.vscode/**","**/.idea/**","**/bower_components/**","**/dist/**","**/build/**","**/coverage/**","**/temp/**","**/tmp/**","**/logs/**","**/flow-typed/**"],"defaultFileEncoding":"UTF-8","inlineAutoCompletion":true,"colorPreview":true,"maxRetryCount":3,"showRetryToast":false,"showSideButtons":true,"showAnnotations":true,"acode.plugin.lint":{"esversion":11},"acode.plugin.extra_syntax_highlights":{"colorPreview":true,"cursorColorizer":"cursor and teardrop","defaultCursorColor":"LightSkyBlue","rainbowIndentGuide":true,"bracketPairColorizer":true,"bracketLevel":3,"bracketColorLevel1":"#ffd700","bracketColorLevel2":"#f472b6","bracketColorLevel3":"#57afff","bracketColorLevel4":"#7ce38b","bracketColorLevel5":"#fb7185","bracketColorLevel6":"#1edac1","indentColorLevel1":"#da70d6","indentColorLevel2":"#fa8072","indentColorLevel3":"#87cefa","indentColorLevel4":"#dd8374","indentColorLevel5":"#ff8c00","indentColorLevel6":"#ffd700"},"acode.plugin.snippets":{"snippetLocation":""},"acode.plugin.ace_linters":{"html":true,"css":true,"javascript":true,"json":true,"yaml":true,"xml":true,"lua":true,"php":true,"python":true,"autocomplete":true},"bajrangcoder.acode.ayumirage":{"iconPack":true,"folderIcon":true},"acode.plugin.prettier":{"printWidth":80,"tabWidth":4,"useTabs":false,"semi":true,"singleQuote":false,"quoteProps":"as-needed","jsxSingleQuote":false,"trailingComma":"none","bracketSpacing":true,"bracketSameLine":false,"arrowParens":"avoid","rangeStart":0,"rangeEnd":null,"requirePragma":false,"insertPragma":false,"proseWrap":"preserve","htmlWhitespaceSensitivity":"css","vueIndentScriptAndStyle":false,"endOfLine":"lf","embeddedLanguageFormatting":"auto","singleAttributePerLine":false,"openErrorPageOnErrors":true,"version":3},"acode.plugin.github":{"askCommitMessage":true}}}
+const express = require("express");
+const router = express.Router();
+const path = require("path");
+const fs = require("fs").promises;
+const fs2 = require("fs");
+const isAuth = require("../middlewares/auth.js");
+const User = require("../models/User.js");
+//const userController = require("../controllers/userController.js");
+
+async function readDirectory(dir, basePath = "") {
+    const files = await fs.readdir(dir);
+    const result = [];
+
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const relativePath = path.join(basePath, file);
+
+        const stats = await fs.stat(filePath);
+        const isDirectory = await stats.isDirectory();
+
+        const item = {
+            name: file,
+            type: isDirectory ? "folder" : "file",
+            path: relativePath,
+            size: stats.size,
+            createdAt: stats.birthtime,
+            modifiedAt: stats.mtime
+        };
+
+        if (isDirectory) {
+            item.children = await readDirectory(filePath, relativePath);
+        }
+        result.push(item);
+    }
+    return result;
+}
+
+
+async function createDirectoryAndFiles(dirPath, contents) {
+  try {
+    await fs.mkdir(dirPath);
+    const keys = Object.keys(contents)
+    const names = ["index", "style", "script"]
+    let num = 0;
+    for (const key of keys) {
+      const fileName = `${names[num]}.${key}`;
+      const filePath = path.join(dirPath, fileName);
+      await fs.writeFile(filePath, contents[key]);
+      num++
+    }
+    console.log(`Directory and files created successfully.`);
+  } catch (error) {
+    console.error('Error creating directory and files:', error);
+  }
+}
+
+
+router.get("/create_project/:project_name", isAuth, async (req, res) => {
+    const { project_name } = req.params;
+    if (project_name.includes("/") || project_name.includes(" ")) {
+        res.status(500).json({ success: false });
+        return;
+    }
+    const html = `<!DOCTYPE html>
+<html>
+ <head>
+   <title>${project_name}</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+   <link rel="stylesheet" href="./style.css"/>
+ </head>
+ <body>
+   <h2>${project_name}</h2>
+   <script src="./script.js"></script>
+ </body>
+</html>
+`;
+    const css = `* {
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+}
+h2 {
+  color: green;
+}
+`;
+    const js = `const name = "${project_name}"
+console.log(name)
+`;
+    try {
+        await createDirectoryAndFiles(`./users/${req.user.id}/${project_name}`, {html, css, js})
+        res.status(201).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.get("/projects", isAuth, async (req, res) => {
+    try {
+        const projects = await readDirectory(`./users/${req.user.id}`);
+        res.status(200).json({ projects });
+    } catch (error) {
+        console.error("Error reading directory:", error);
+        res.status(500).json({
+            projects: [],
+            message: "Internal Server Error"
+        });
+    }
+});
+
+router.post("/create_folder", isAuth, async (req, res) => {
+    const { filepath, file_name } = req.body;
+    if (file_name.includes("/")) {
+        res.status(500).json({ success: false });
+        return;
+    }
+    const dirPath = path.join(__dirname, "../users", req.user.id, filepath);
+    try {
+        await fs.mkdir(path.join(dirPath, file_name)); // Delete the file and its subdirectories
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+router.post("/create_file", isAuth, async (req, res) => {
+    const { filepath, file_name } = req.body;
+    if (file_name.includes("/")) {
+        res.status(500).json({ success: false });
+        return;
+    }
+    const dirPath = path.join(__dirname, "../users", req.user.id, filepath);
+    try {
+        await fs.writeFile(
+            path.join(dirPath, file_name),
+            "// let's start coding"
+        ); // Delete the file and its subdirectories
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/update_file", isAuth, async (req, res) => {
+    const { filepath, content } = req.body;
+    const filePath = path.join(__dirname, "../users", req.user.id, filepath);
+    try {
+        await fs.writeFile(filePath, content);
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/loadFile", isAuth, async (req, res) => {
+    const { filepath } = req.body; // Assuming directory and filename are sent in the request body
+    const filePath = path.join(__dirname, "../users", req.user.id, filepath);
+    try {
+        const file = await fs.readFile(filePath, "utf8");
+        res.status(200).json({ success: true, file });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.delete("/deleteFile", isAuth, async (req, res) => {
+    const { filepath } = req.body; // Assuming directory and filename are sent in the request body
+    const filePath = path.join(__dirname, "../users", req.user.id, filepath);
+
+    try {
+        await fs.unlink(filePath);
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+async function deleteFileRecursive(filePath) {
+    const stat = await fs.lstat(filePath);
+    if (stat.isDirectory()) {
+        // If it's a directory, iterate through its contents
+        const files = await fs.readdir(filePath);
+        for (const file of files) {
+            const curPath = path.join(filePath, file);
+            await deleteFileRecursive(curPath); // Recursively delete files and subdirectories
+        }
+        await fs.rmdir(filePath); // Finally, delete the empty directory
+    } else {
+        await fs.unlink(filePath); // If it's a file, delete it
+    }
+}
+
+router.delete("/deleteFolder", isAuth, async (req, res) => {
+    const { filepath } = req.body; // Assuming directory and filename are sent in the request params
+    const filePath = path.join(__dirname, "../users", req.user.id, filepath);
+    try {
+        await deleteFileRecursive(filePath); // Delete the file and its subdirectories
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+router.get("/css/:filename", isAuth, async (req, res) => {
+    res.sendFile(req.params.filename, {
+        root: path.join(__dirname, "../views/css/styles")
+    });
+});
+router.get("/js/:filename", isAuth, async (req, res) => {
+    res.sendFile(req.params.filename, {
+        root: path.join(__dirname, "../views/js")
+    });
+});
+router.get("/editor", isAuth, (req, res) => {
+    res.sendFile("editor.html", { root: path.join(__dirname, "../views") });
+});
+module.exports = router;
