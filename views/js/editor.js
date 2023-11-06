@@ -1,3 +1,4 @@
+window.addEventListener("load", () => {
 const logout_btn = document.getElementById("logout_btn");
 const preview_btn = document.getElementById("preview_btn");
 const save_btn = document.getElementById("save_btn");
@@ -84,8 +85,8 @@ proMod.subscribe((newState, oldState) => {
         const img2 = new Image();
         const img3 = new Image();
         img.src = "/folder2.png";
-        img2.src = "/dots.png";
-        img3.src = "/dots.png";
+        img2.src = "/menu.png";
+        img3.src = "/menu.png";
         div.appendChild(img);
         div.appendChild(span);
         div.classList.add("folder");
@@ -118,7 +119,7 @@ function buildFileTree(pro, pareElm) {
             span.textContent = item.name;
             div.appendChild(img);
             div.appendChild(span);
-            img2.src = "/dots.png";
+            img2.src = "/menu.png";
             img2.addEventListener("click", function () {
                 state.emit("showDialog", { element: this, item });
             });
@@ -147,7 +148,7 @@ function buildFileTree(pro, pareElm) {
             if (ext == "js") {
                 img.src = "/js.png";
             }
-            img2.src = "/dots.png";
+            img2.src = "/menu.png";
             div.appendChild(img);
             div.appendChild(span);
             div.classList.add("folder");
@@ -194,89 +195,83 @@ function deleteFileOrFolder(item) {
     }
 }
 
-function createIcon(src, clickHandler, args) {
-    const img = document.createElement("img");
-    img.src = src;
-    img.addEventListener("click", () => clickHandler(args));
-    return img;
-}
+(function () {
+  const div = document.createElement("div");
+  const box = document.createElement("div");
+  div.style.display = "none";
+  box.style.position = "absolute";
+  box.classList.add("dialog_box");
 
-function createIcons(item) {
-    div.innerHTML = ""; // Clear previous content
-    box.appendChild(
-        createIcon(
-            "/fa-icons/svgs/solid/trash-can.svg",
-            deleteFileOrFolder,
-            item
-        )
-    );
+  function createIcon(src, id) {
+    const i = document.createElement("i");
+    i.classList.add(src)
+    i.id = id;
+    return i;
+  }
 
-    if (item.type === "folder") {
-        box.appendChild(
-            createIcon(
-                "/fa-icons/svgs/solid/folder-plus.svg",
-                createFolder,
-                item.path
-            )
-        );
-        box.appendChild(
-            createIcon(
-                "/fa-icons/svgs/solid/file-circle-plus.svg",
-                createFile,
-                item.path
-            )
-        );
-    }
+  function createIcons(box) {
+    const iconData = [
+      { src: "fa fa-folder-plus", id: "add_folder" },
+      { src: "fa fa-file-circle-plus", id: "add_file" },
+      { src: "fa fa-trash-can", id: "delete" },
+      { src: "fa fa-pencil", id: "rename" },
+      { src: "fa fa-circle-info", id: "info" },
+    ];
 
-    box.appendChild(
-        createIcon("/fa-icons/svgs/solid/pencil.svg", editItem, item)
-    );
-    box.appendChild(
-        createIcon("/fa-icons/svgs/solid/circle-info.svg", showItemInfo, item)
-    );
+    box.innerHTML = ""
+    iconData.forEach((data) => {
+      box.appendChild(createIcon(data.src, data.id));
+    });
+    div.innerHTML = ""
     div.appendChild(box);
-}
-const div = document.createElement("div")
-dialogMod.subscribe((newValue, oldValue) => {
-    try {
-        if (newValue.isShow) {
-            const { element, item } = newValue;
-            const box = document.createElement("div");
-            box.style.position = "absolute";
-            box.style.top = `${element.offsetTop - 8}px`;
-            box.style.left = `${element.offsetLeft + 30}px`;
-            const img = document.createElement("img");
-            const img1 = document.createElement("img");
-            const img2 = document.createElement("img");
-            const img3 = document.createElement("img");
-            img.src = "/delete.png";
-            img1.src = "/delete.png";
-            img2.src = "/delete.png";
-            img3.src = "/delete.png";
+    sidebar.appendChild(div);
+  }
 
-            img.addEventListener("click", () => deleteFileOrFolder(item));
-            box.appendChild(img);
-            if (item.type === "folder") {
-                img1.addEventListener("click", () => createFolder(item.path));
-                box.appendChild(img1);
-                img2.addEventListener("click", () => createFile(item.path));
-                box.appendChild(img2);
-            }
-            box.appendChild(img3);
-            div.innerHTML = "";
-            box.classList.add("dialog_box");
-            div.appendChild(box);
-            div.id = "dialog";
-            sidebar.appendChild(div);
-        } else {
-            const s = sidebar.querySelector("#dialog");
-            s.remove();
-            dialogMod.setState({ isShow: false });
-        }
-    } catch (e) {
-        console.log(e.message);
+
+  dialogMod.subscribe((newValue, oldValue) => {
+    createIcons(box);
+    try {
+      if (newValue.isShow) {
+        const { element, item } = newValue;
+        box.style.top = `${element.offsetTop - 5}px`;
+        box.style.left = `${element.offsetLeft + 30}px`;
+
+        box.childNodes.forEach((icon) => {
+          switch (icon.id) {
+            case "add_folder":
+              icon.addEventListener("click", () => createFolder(item.path));
+              break;
+            case "add_file":
+              icon.addEventListener("click", () => createFile(item.path));
+              break;
+            case "delete":
+              icon.addEventListener("click", () => deleteFileOrFolder(item));
+              break;
+            case "rename":
+              icon.addEventListener("click", () => rename(item));
+              break;
+            case "info":
+              icon.addEventListener("click", () => showInfo(item));
+              break;
+          }
+
+          if (item.type === "file" && (icon.id === "add_folder" || icon.id === "add_file")) {
+            icon.style.display = "none";
+          } else {
+            icon.style.display = "block";
+          }
+        });
+
+        div.style.display = "block";
+      } else {
+        div.style.display = "none";
+      }
+    } catch (error) {
+      console.error(error.message);
     }
-});
+  });
+})();
+
 
 const consoleTab = document.getElementById("consoleTab");
 
@@ -284,7 +279,7 @@ let logMessages = [];
 
 function writeToConsole(message) {
     const logElement = document.createElement("p");
-    logElement.style.padding = "5px";
+    logElement.style.padding = "10px";
     logElement.style.background = "#e58b6e";
     logElement.style.fontWeight = "bold";
     logElement.style.fontSize = "13px";
@@ -315,7 +310,13 @@ window.onerror = function (message, source, lineno, colno, error) {
 consoleMod.subscribe((newValue, oldValue) => {
     const { results, isShow } = newValue;
     if (isShow) {
-        consoleTab.style.bottom = `0`;
+        if(consoleTab.style.bottom < "0") {
+           consoleTab.style.bottom = `0`;
+        }else {
+           consoleTab.addEventListener("transitionend", () => {
+             consoleTab.style.display = 'none'
+           })
+        }
         let error = "";
         results[0].messages.forEach(message => {
             error += message.message;
@@ -426,6 +427,14 @@ async function getProjects(starting = "") {
     }
 }
 
+async function rename(item) {
+    console.log(item.modifiedAt);
+}
+
+async function showInfo(item) {
+    console.log(item.size);
+}
+
 create_project_btn.addEventListener("click", async () => {
     const p = document.createElement("p");
     try {
@@ -448,7 +457,7 @@ create_project_btn.addEventListener("click", async () => {
     }
 });
 
-window.addEventListener("load", async () => await getProjects("starting"));
+getProjects("starting");
 
 async function loadFile(path) {
     await sidebar.classList.remove("show_sidebar");
@@ -644,3 +653,4 @@ function setCaretPosition(position) {
 }
 
 syncColumnNumbers();
+})
