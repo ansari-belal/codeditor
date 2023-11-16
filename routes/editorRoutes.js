@@ -2,9 +2,11 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const fs = require("fs").promises;
-const fs2 = require("fs");
+const archiver = require("archiver");
+const webpack = require("webpack");
 const isAuth = require("../middlewares/auth.js");
 const User = require("../models/User.js");
+const prettier = require("prettier");
 //const userController = require("../controllers/userController.js");
 
 async function readDirectory(dir, basePath = "") {
@@ -35,30 +37,35 @@ async function readDirectory(dir, basePath = "") {
     return result;
 }
 
-
 async function createDirectoryAndFiles(dirPath, contents) {
-  try {
-    await fs.mkdir(dirPath);
-    const keys = Object.keys(contents)
-    const names = ["index", "style", "script"]
-    let num = 0;
-    for (const key of keys) {
-      const fileName = `${names[num]}.${key}`;
-      const filePath = path.join(dirPath, fileName);
-      await fs.writeFile(filePath, contents[key]);
-      num++
+    try {
+        await fs.mkdir(dirPath);
+        const keys = Object.keys(contents);
+        const names = ["index", "style", "script"];
+        let num = 0;
+        for (const key of keys) {
+            const fileName = `${names[num]}.${key}`;
+            const filePath = path.join(dirPath, fileName);
+            await fs.writeFile(filePath, contents[key]);
+            num++;
+        }
+        console.log(`Directory and files created successfully.`);
+    } catch (error) {
+        console.error("Error creating directory and files:", error);
     }
-    console.log(`Directory and files created successfully.`);
-  } catch (error) {
-    console.error('Error creating directory and files:', error);
-  }
 }
 
-
-router.get("/create_project/:project_name", isAuth, async (req, res) => {
-    const { project_name } = req.params;
+router.post("/create_project", isAuth, async (req, res) => {
+    const { project_name } = req.body;
+    if (!project_name) {
+        res.status(500).json({ success: false, message: "fill the input" });
+        return;
+    }
     if (project_name.includes("/") || project_name.includes(" ")) {
-        res.status(500).json({ success: false });
+        res.status(500).json({
+            success: false,
+            message: 'use "_" intead "/" or space'
+        });
         return;
     }
     const html = `<!DOCTYPE html>
@@ -87,7 +94,10 @@ h2 {
 console.log(name)
 `;
     try {
-        await createDirectoryAndFiles(`./users/${req.user.id}/${project_name}`, {html, css, js})
+        await createDirectoryAndFiles(
+            `./users/${req.user.id}/${project_name}`,
+            { html, css, js }
+        );
         res.status(201).json({ success: true });
     } catch (e) {
         res.status(500).json({ success: false });
@@ -150,6 +160,27 @@ router.post("/update_file", isAuth, async (req, res) => {
     }
 });
 
+
+function main() {
+  const compiler = new webpack()
+  console.log(webpack)
+}
+
+main()
+
+router.post("/format", isAuth, async (req, res) => {
+    const { filepath } = req.body;
+    const filePath = `./users/${req.user.id}/${filepath}`;
+    try {
+        const content = await fs.readFile(filePath, "utf8")
+        const formatted = await prettier.format(content, {filepath: filePath})
+        await fs.writeFile(filePath, formatted)
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
 router.post("/loadFile", isAuth, async (req, res) => {
     const { filepath } = req.body; // Assuming directory and filename are sent in the request body
     const filePath = path.join(__dirname, "../users", req.user.id, filepath);
@@ -164,10 +195,43 @@ router.post("/loadFile", isAuth, async (req, res) => {
 router.delete("/deleteFile", isAuth, async (req, res) => {
     const { filepath } = req.body; // Assuming directory and filename are sent in the request body
     const filePath = path.join(__dirname, "../users", req.user.id, filepath);
-
     try {
         await fs.unlink(filePath);
         res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.get("/download/:project_name", isAuth, async (req, res) => {
+    const { project_name } = req.params; // Assuming directory and filename are sent in the request body
+    const filePath = `./users/${req.user.id}/${project_name}`;
+
+    try {
+        const archive = archiver("zip", {
+            zlib: { level: 9 } // Compression level (0-9)
+        });
+
+        // Set the response headers for the zip file download
+        res.setHeader(
+            "Content-Disposition",
+            'attachment; filename="my-archive.zip"'
+        );
+        res.setHeader("Content-Type", "application/zip");
+
+        // Pipe the archive data to the response
+        archive.pipe(res);
+
+        // Add files to the archive (replace with your own file paths)
+        archive.directory(filePath, false);
+
+        // Finalize the archive and send it to the response
+        archive.finalize();
+
+        // Listen for archive errors
+        archive.on("error", err => {
+            res.status(500).send({ error: err.message });
+        });
     } catch (e) {
         res.status(500).json({ success: false });
     }
@@ -211,4 +275,5 @@ router.get("/js/:filename", isAuth, async (req, res) => {
 router.get("/editor", isAuth, (req, res) => {
     res.sendFile("editor.html", { root: path.join(__dirname, "../views") });
 });
+
 module.exports = router;

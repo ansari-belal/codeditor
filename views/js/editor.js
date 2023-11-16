@@ -1,4 +1,3 @@
-window.addEventListener("load", () => {
 const logout_btn = document.getElementById("logout_btn");
 const preview_btn = document.getElementById("preview_btn");
 const save_btn = document.getElementById("save_btn");
@@ -196,82 +195,92 @@ function deleteFileOrFolder(item) {
 }
 
 (function () {
-  const div = document.createElement("div");
-  const box = document.createElement("div");
-  div.style.display = "none";
-  box.style.position = "absolute";
-  box.classList.add("dialog_box");
+    const div = document.createElement("div");
+    const box = document.createElement("div");
+    div.style.display = "none";
+    box.style.position = "absolute";
+    box.classList.add("dialog_box");
 
-  function createIcon(src, id) {
-    const i = document.createElement("i");
-    i.classList.add(src)
-    i.id = id;
-    return i;
-  }
-
-  function createIcons(box) {
-    const iconData = [
-      { src: "fa fa-folder-plus", id: "add_folder" },
-      { src: "fa fa-file-circle-plus", id: "add_file" },
-      { src: "fa fa-trash-can", id: "delete" },
-      { src: "fa fa-pencil", id: "rename" },
-      { src: "fa fa-circle-info", id: "info" },
-    ];
-
-    box.innerHTML = ""
-    iconData.forEach((data) => {
-      box.appendChild(createIcon(data.src, data.id));
-    });
-    div.innerHTML = ""
-    div.appendChild(box);
-    sidebar.appendChild(div);
-  }
-
-
-  dialogMod.subscribe((newValue, oldValue) => {
-    createIcons(box);
-    try {
-      if (newValue.isShow) {
-        const { element, item } = newValue;
-        box.style.top = `${element.offsetTop - 5}px`;
-        box.style.left = `${element.offsetLeft + 30}px`;
-
-        box.childNodes.forEach((icon) => {
-          switch (icon.id) {
-            case "add_folder":
-              icon.addEventListener("click", () => createFolder(item.path));
-              break;
-            case "add_file":
-              icon.addEventListener("click", () => createFile(item.path));
-              break;
-            case "delete":
-              icon.addEventListener("click", () => deleteFileOrFolder(item));
-              break;
-            case "rename":
-              icon.addEventListener("click", () => rename(item));
-              break;
-            case "info":
-              icon.addEventListener("click", () => showInfo(item));
-              break;
-          }
-
-          if (item.type === "file" && (icon.id === "add_folder" || icon.id === "add_file")) {
-            icon.style.display = "none";
-          } else {
-            icon.style.display = "block";
-          }
-        });
-
-        div.style.display = "block";
-      } else {
-        div.style.display = "none";
-      }
-    } catch (error) {
-      console.error(error.message);
+    function createIcon(src, id) {
+        const img = document.createElement("img");
+        img.src = src;
+        img.id = id;
+        alert(img.outerHTML)
+        return img;
     }
-  });
-})();
 
+    function createIcons(box) {
+        const iconData = [
+            { src: "/fa-icons/svgs/regular/folder-plus.svg", id: "add_folder" },
+            { src: "/fa-icons/svgs/regular/file-plus.svg", id: "add_file" },
+            { src: "/fa-icons/svgs/regular/trash-bin.svg", id: "delete" },
+            { src: "/fa-icons/svgs/regular/pencil.svg", id: "rename" },
+            { src: "/fa-icons/svgs/regular/circle-info.svg", id: "info" }
+        ];
+
+        box.innerHTML = "";
+        iconData.forEach(data => {
+            box.appendChild(createIcon(data.src, data.id));
+        });
+        div.innerHTML = "";
+        div.appendChild(box);
+        sidebar.appendChild(div);
+    }
+
+    dialogMod.subscribe((newValue, oldValue) => {
+        createIcons(box);
+        try {
+            if (newValue.isShow) {
+                const { element, item } = newValue;
+                box.style.top = `${element.offsetTop - 5}px`;
+                box.style.left = `${element.offsetLeft + 30}px`;
+
+                box.childNodes.forEach(icon => {
+                    switch (icon.id) {
+                        case "add_folder":
+                            icon.addEventListener("click", () =>
+                                createFolder(item.path)
+                            );
+                            break;
+                        case "add_file":
+                            icon.addEventListener("click", () =>
+                                createFile(item.path)
+                            );
+                            break;
+                        case "delete":
+                            icon.addEventListener("click", () =>
+                                deleteFileOrFolder(item)
+                            );
+                            break;
+                        case "rename":
+                            icon.addEventListener("click", () => rename(item));
+                            break;
+                        case "info":
+                            icon.addEventListener("click", () =>
+                                showInfo(item)
+                            );
+                            break;
+                    }
+
+                    if (
+                        item.type === "file" &&
+                        (icon.id === "add_folder" || icon.id === "add_file")
+                    ) {
+                        icon.style.display = "none";
+                    } else {
+                        icon.style.display = "block";
+                    }
+                });
+
+                div.style.display = "block";
+            } else {
+                div.style.display = "none";
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
+    });
+})();
 
 const consoleTab = document.getElementById("consoleTab");
 
@@ -310,12 +319,12 @@ window.onerror = function (message, source, lineno, colno, error) {
 consoleMod.subscribe((newValue, oldValue) => {
     const { results, isShow } = newValue;
     if (isShow) {
-        if(consoleTab.style.bottom < "0") {
-           consoleTab.style.bottom = `0`;
-        }else {
-           consoleTab.addEventListener("transitionend", () => {
-             consoleTab.style.display = 'none'
-           })
+        if (consoleTab.style.bottom < "0") {
+            consoleTab.style.bottom = `0`;
+        } else {
+            consoleTab.addEventListener("transitionend", () => {
+                consoleTab.style.display = "none";
+            });
         }
         let error = "";
         results[0].messages.forEach(message => {
@@ -358,8 +367,8 @@ profile.addEventListener("click", () => {
 });
 
 async function download(name) {
-    //const progressBar = document.getElementById("progressBar");
-    //progressBar.style.display = "block";
+    const progressBar = document.getElementById("progressBar");
+    progressBar.style.display = "block";
 
     try {
         const response = await fetch(`/download/${name}`);
@@ -377,9 +386,7 @@ async function download(name) {
                         break;
                     }
                     controller.enqueue(value);
-
-                    // Calculate and update progress based on the amount read
-                    //progressBar.value += value.length;
+                    progressBar.innerText += value.length;
                 }
             }
         });
@@ -439,15 +446,15 @@ create_project_btn.addEventListener("click", async () => {
     const p = document.createElement("p");
     try {
         p.textContent = "Loading...";
-        projectHierarchy.appendChild(p);
         const data = await req(`/create_project`, "POST", {
             project_name: project_input.value
         });
         if (data.success) {
+            projectHierarchy.appendChild(p);
             await getProjects();
+            p.remove();
             activePro = project_input.value;
             project_input.value = "";
-            p.remove();
         } else {
             p.style.display = "none";
             alert(data.message);
@@ -531,8 +538,7 @@ save_btn.addEventListener("click", async () => {
 });
 format_btn.addEventListener("click", async () => {
     const data = await req("/format", "POST", {
-        filepath: activeFile,
-        content: currentCode
+        filepath: activeFile
     });
     if (data.success) {
         await loadFile(activeFile);
@@ -653,4 +659,3 @@ function setCaretPosition(position) {
 }
 
 syncColumnNumbers();
-})
