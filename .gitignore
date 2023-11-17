@@ -1,1 +1,9 @@
 node_modules/
+.env
+.mdb
+.github
+users/
+cert.pem
+combined.log
+error.log
+key.pem
