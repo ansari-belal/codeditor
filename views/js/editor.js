@@ -211,11 +211,11 @@ function deleteFileOrFolder(item) {
 
     function createIcons(box) {
         const iconData = [
-            { src: "/fa-icons/svgs/regular/folder-plus.svg", id: "add_folder" },
-            { src: "/fa-icons/svgs/regular/file-plus.svg", id: "add_file" },
-            { src: "/fa-icons/svgs/regular/trash-bin.svg", id: "delete" },
-            { src: "/fa-icons/svgs/regular/pencil.svg", id: "rename" },
-            { src: "/fa-icons/svgs/regular/circle-info.svg", id: "info" }
+            { src: "/fa-icons/svgs/solid/folder-plus.svg", id: "add_folder" },
+            { src: "/fa-icons/svgs/solid/file-circle-plus.svg", id: "add_file" },
+            { src: "/fa-icons/svgs/regular/trash-can.svg", id: "delete" },
+            { src: "/fa-icons/svgs/solid/pencil.svg", id: "rename" },
+            { src: "/fa-icons/svgs/solid/circle-info.svg", id: "info" }
         ];
 
         box.innerHTML = "";
