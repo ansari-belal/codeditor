@@ -4,6 +4,7 @@ const save_btn = document.getElementById("save_btn");
 const format_btn = document.getElementById("format_btn");
 const run_btn = document.getElementById("run_btn");
 const name = document.getElementById("name");
+const edit_con = document.getElementById("edit_con");
 const profile = document.getElementById("profile");
 const profile_dialog = document.querySelector(".profile_dialog");
 const project_input = document.querySelector("#project");
@@ -20,7 +21,7 @@ const fileHierarchy = document.querySelector("#filesHierarchy");
 const logo = document.querySelector(".logo");
 
 name.innerText = localStorage.getItem("username");
-let activeFile = null;
+let activeFile = "index.html";
 let activePro = null;
 let code = "";
 let currentCode = "";
@@ -153,9 +154,9 @@ function buildFileTree(pro, pareElm) {
             div.classList.add("folder");
             div.addEventListener("click", async () => {
                 language = ext;
+                activeFile = item.path;
                 dialogMod.setState({ isShow: false });
                 await loadFile(item.path);
-                activeFile = item.path;
                 save_btn.hidden = false;
                 format_btn.hidden = false;
                 if (language === "js" || language === "mjs") {
@@ -205,14 +206,16 @@ function deleteFileOrFolder(item) {
         const img = document.createElement("img");
         img.src = src;
         img.id = id;
-        alert(img.outerHTML)
         return img;
     }
 
     function createIcons(box) {
         const iconData = [
             { src: "/fa-icons/svgs/solid/folder-plus.svg", id: "add_folder" },
-            { src: "/fa-icons/svgs/solid/file-circle-plus.svg", id: "add_file" },
+            {
+                src: "/fa-icons/svgs/solid/file-circle-plus.svg",
+                id: "add_file"
+            },
             { src: "/fa-icons/svgs/regular/trash-can.svg", id: "delete" },
             { src: "/fa-icons/svgs/solid/pencil.svg", id: "rename" },
             { src: "/fa-icons/svgs/solid/circle-info.svg", id: "info" }
@@ -309,7 +312,7 @@ console.log = function () {
 };
 
 // Use the custom console
-//console.log();
+//console.log(edit_con.innerHTML);
 
 // Handle error logging
 window.onerror = function (message, source, lineno, colno, error) {
@@ -474,7 +477,7 @@ async function loadFile(path) {
         filepath: path
     });
     if (data.success) {
-        const result = await hljs.highlight(language, data.file);
+        const result = await hljs.highlight(data.file, { language });
         editor.innerHTML = await result.value;
         code = result.code;
         currentCode = code;
@@ -514,15 +517,96 @@ async function deleteFolder(path) {
     }
 }
 
+/*editor.addEventListener("input", e => {
+    e.preventDefault();
+    const cursorPosition = getCaretPosition();
+    const currentValue = editor.textContent;
+
+    // Get the text before and after the cursor
+    const textBeforeCursor = currentValue.substring(0, cursorPosition);
+    const textAfterCursor = currentValue.substring(cursorPosition);
+
+    // Find the last occurrence of '{' before the cursor
+    const lastOpenBraceIndex = textBeforeCursor.lastIndexOf("(");
+
+    // Check if '{' is present and is not within quotes or comments
+    if (
+        e.inputType === "insertText" &&
+        lastOpenBraceIndex !== -1 &&
+        !isWithinQuotes(textBeforeCursor, lastOpenBraceIndex) &&
+        !isWithinComment(textBeforeCursor, lastOpenBraceIndex)
+    ) {
+        // Calculate the indentation of the previous line
+        const lastNewLineIndex = textBeforeCursor.lastIndexOf("\n");
+        const lastLine = textBeforeCursor.substring(lastNewLineIndex + 1);
+        let updatedValue = "";
+        if (lastLine.trim().endsWith("(") && !validateBraces(currentValue)) {
+            updatedValue = textBeforeCursor + ")" + textAfterCursor;
+            const result = hljs.highlight(updatedValue, { language });
+            editor.innerHTML = result.value;
+
+            setCaretPosition(cursorPosition);
+        } else if (lastLine.trim().endsWith('"')) {
+            updatedValue = textBeforeCursor + '"' + textAfterCursor;
+            const result = hljs.highlight(updatedValue, { language });
+            editor.innerHTML = result.value;
+            setCaretPosition(cursorPosition);
+        } else if (/\(\s*{/m.test(lastLine) && !validateBraces(currentValue)) {
+            updatedValue = textBeforeCursor + '}' + textAfterCursor;
+            const result = hljs.highlight(updatedValue, { language });
+            editor.innerHTML = result.value;
+            setCaretPosition(cursorPosition);
+        }
+    }
+});
+*/
+let isInput = false
 editor.addEventListener("input", e => {
     e.preventDefault();
+    try {
+    isInput = true
+    const cursorPosition = getCaretPosition();
+    const currentValue = editor.textContent;
+    const textBeforeCursor = currentValue.substring(0, cursorPosition);
+    const textAfterCursor = currentValue.substring(cursorPosition);
+
+    const lastOpenBraceIndex = textBeforeCursor.lastIndexOf("(");
+    if (e.inputType === "insertText" &&
+        lastOpenBraceIndex !== -1 &&
+        !isWithinQuotes(textBeforeCursor, lastOpenBraceIndex) &&
+        !isWithinComment(textBeforeCursor, lastOpenBraceIndex)
+    ) {
+        const lastNewLineIndex = textBeforeCursor.lastIndexOf("\n");
+        const lastLine = textBeforeCursor.substring(lastNewLineIndex + 1);
+        let updatedValue = "";
+
+        const trimLine = lastLine.trim();
+        if (trimLine.endsWith("(") && !validateBraces(currentValue)) {
+            updatedValue = textBeforeCursor + ")" + textAfterCursor;
+        } else if (trimLine.endsWith('"')) {
+            updatedValue = textBeforeCursor + '"' + textAfterCursor;
+        } else if (trimLine.endsWith("{") && !validateBraces(currentValue)) {
+            updatedValue = textBeforeCursor + '}' + textAfterCursor;
+        }
+
+        if (updatedValue) {
+            const result = hljs.highlight(updatedValue, { language });
+            editor.innerHTML = result.value;
+            setCaretPosition(cursorPosition);
+        }
+    }
+
     const position = getCaretPosition();
-    const result = hljs.highlight(language, editor.textContent);
+    const result = hljs.highlight(editor.textContent, { language });
     editor.innerHTML = result.value;
     currentCode = result.code;
     syncColumnNumbers();
     setCaretPosition(position);
+    } catch (err) {
+      alert(err)
+    }
 });
+
 
 save_btn.addEventListener("click", async () => {
     const data = await req("/update_file", "POST", {
@@ -599,6 +683,159 @@ window.addEventListener("beforeunload", e => {
         e.returnValue = "unsaved changes";
     }
 });
+
+editor.addEventListener("keydown", event => {
+  try {
+   // isInput = false
+    if (event.key === "Enter" && !event.shiftKey) {
+        const cursorPosition = getCaretPosition();
+        const currentValue = editor.textContent;
+
+        // Get the text before and after the cursor
+        const textBeforeCursor = currentValue.substring(0, cursorPosition);
+        const textAfterCursor = currentValue.substring(cursorPosition);
+
+        // Find the last occurrence of '{' before the cursor
+        const lastOpenBraceIndex = textBeforeCursor.lastIndexOf("{");
+
+        // Check if '{' is present and is not within quotes or comments
+        if (
+            lastOpenBraceIndex !== -1 &&
+            !isWithinQuotes(textBeforeCursor, lastOpenBraceIndex) &&
+            !isWithinComment(textBeforeCursor, lastOpenBraceIndex)
+        ) {
+            event.preventDefault();
+
+            // Calculate the indentation of the previous line
+            const lastNewLineIndex = textBeforeCursor.lastIndexOf("\n");
+            const lastLine = textBeforeCursor.substring(lastNewLineIndex + 1);
+            const indentation = lastLine.match(/^\s*/)[0];
+            const indentLevel = language === "css" ? " " : "  ";
+            let extraIndentation = indentLevel; // Set the extra indentation level (two spaces in this case)
+            let updatedValue = "";
+            const funReg = /\(\)\s+\{/m;
+            const objReg = /\=\s+\{/m;
+            if (
+                (funReg.test(lastLine) && !validateBraces(currentValue)) ||
+                (objReg.test(lastLine) && !validateBraces(currentValue))
+            ) {
+                extraIndentation += indentLevel; // Add an additional two spaces if the line ends with '{'
+                updatedValue =
+                    textBeforeCursor +
+                    "\n" +
+                    indentation +
+                    extraIndentation +
+                    "\n" +
+                    indentation +
+                    "}" +
+                    textAfterCursor;
+                const result = hljs.highlight(updatedValue, { language });
+                editor.innerHTML = result.value;
+
+                setCaretPosition(
+                    cursorPosition +
+                        indentation.length +
+                        extraIndentation.length +
+                        1
+                );
+            } else {
+                extraIndentation += "  "; // Add an additional two spaces if the line ends with '{'
+                updatedValue =
+                    textBeforeCursor +
+                    "\n" +
+                    indentation +
+                    extraIndentation +
+                    textAfterCursor;
+                const result = hljs.highlight(updatedValue, { language });
+                editor.innerHTML = result.value;
+
+                setCaretPosition(
+                    cursorPosition +
+                        indentation.length +
+                        extraIndentation.length +
+                        1
+                );
+            }
+            if (!lastLine.trim().endsWith("{")) {
+                updatedValue =
+                    textBeforeCursor + "\n" + indentation + textAfterCursor;
+                const result = hljs.highlight(updatedValue, { language });
+                editor.innerHTML = result.value;
+                setCaretPosition(cursorPosition + indentation.length + 1);
+            }
+        }
+        syncColumnNumbers();
+    }
+  } catch (err) {
+    alert(err)
+  }
+});
+
+// Function to check if '{' is within quotes
+function isWithinQuotes(text, index) {
+    const textBeforeIndex = text.substring(0, index);
+    const quoteCount = (textBeforeIndex.match(/"/g) || []).length;
+    const backslashCount = (textBeforeIndex.match(/\\\"/g) || []).length;
+    return quoteCount % 2 === 1 && backslashCount % 2 === 0;
+}
+
+// Function to check if '{' is within a comment
+function isWithinComment(text, index) {
+    const textBeforeIndex = text.substring(0, index);
+    const lastCommentStart = textBeforeIndex.lastIndexOf("/*");
+    const lastCommentEnd = textBeforeIndex.lastIndexOf("*/");
+    return lastCommentStart > lastCommentEnd;
+}
+
+function validateBraces(code) {
+    const bracketStack = [];
+    const curlyBracketStack = [];
+
+    for (let i = 0; i < code.length; i++) {
+        const char = code.charAt(i);
+
+        if (char === "{") {
+            curlyBracketStack.push(i);
+        } else if (char === "}") {
+            if (curlyBracketStack.length === 0) {
+                console.log(
+                    "there's no matching opening brace for the current closing brace"
+                );
+                console.log(`Unmatched closing brace '}' at index ${i}`);
+                return false;
+            }
+            curlyBracketStack.pop();
+        }
+
+        if (char === "(") {
+            bracketStack.push(i);
+        } else if (char === ")") {
+            if (bracketStack.length === 0) {
+                console.log(
+                    "there's no matching opening brace for the current closing brace"
+                );
+                console.log(`Unmatched closing brace '}' at index ${i}`);
+                return false;
+            }
+            bracketStack.pop();
+        }
+    }
+
+    if (curlyBracketStack.length !== 0) {
+        console.log("there are unmatched opening braces left");
+        console.log(`Unmatched opening brace '{' at index ${curlyBracketStack.pop()}`);
+        return false;
+    }
+    
+    if (bracketStack.length !== 0) {
+        console.log("there are unmatched opening braces left");
+        console.log(`Unmatched opening brace '{' at index ${bracketStack.pop()}`);
+        return false;
+    }
+
+    console.log("All braces are properly matched");
+    return true;
+}
 
 function syncColumnNumbers(messages = null) {
     let lines = editor.textContent.split("\n");
